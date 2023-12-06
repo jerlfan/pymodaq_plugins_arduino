@@ -2,7 +2,7 @@
 
 [plugin-info]
 SHORT_PLUGIN_NAME = 'arduino'  #to be modified, for instance daqmx then rename the module name:
-# (pymodaq_plugins_template become pymodaq_plugins_daqmx for instance)
+# (pymodaq_plugins_arduino become pymodaq_plugins_daqmx for instance)
 
 package-url = 'https://github.com/jerlfan/pymodaq_plugins_arduino' #to modify
 description = 'Plugin allowing to use an arduino board using Telemetrix4Arduino firmware (tested version5.3.3)'
