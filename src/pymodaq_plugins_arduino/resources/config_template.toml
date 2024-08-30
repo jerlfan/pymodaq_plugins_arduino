@@ -1,0 +1,10 @@
+title = 'this is the configuration file of the plugin Arduino'
+
+
+[LED]
+com_port = 'COM23'
+
+[LED.pins]
+    red_pin = 9
+    green_pin = 11
+    blue_pin = 10
