@@ -1,11 +1,16 @@
 from qtpy import QtWidgets
 
+from pyqtgraph.widgets.ColorButton import ColorButton
+
 from pymodaq.utils import gui_utils as gutils
 from pymodaq.utils.config import Config, get_set_preset_path, ConfigError
 from pymodaq.utils.logger import set_logger, get_module_name
 
+from pymodaq.utils.managers.modules_manager import ModulesManager
+from pymodaq.control_modules.daq_move import DAQ_Move
+
 # todo: replace here *pymodaq_plugins_template* by your plugin package name
-from pymodaq_plugins_template.utils import Config as PluginConfig
+from pymodaq_plugins_arduino.utils import Config as PluginConfig
 
 logger = set_logger(get_module_name(__file__))
 
@@ -13,14 +18,14 @@ main_config = Config()
 plugin_config = PluginConfig()
 
 # todo: modify this as you wish
-EXTENSION_NAME = 'MY_EXTENSION_NAME'  # the name that will be displayed in the extension list in the
+EXTENSION_NAME = 'ColorSynthesizer'  # the name that will be displayed in the extension list in the
 # dashboard
-CLASS_NAME = 'CustomExtensionTemplate'  # this should be the name of your class defined below
+CLASS_NAME = 'ColorSynthesizer'  # this should be the name of your class defined below
 
 
 # todo: modify the name of this class to reflect its application and change the name in the main
 # method at the end of the script
-class CustomExtensionTemplate(gutils.CustomApp):
+class ColorSynthesizer(gutils.CustomApp):
 
     # todo: if you wish to create custom Parameter and corresponding widgets. These will be
     # automatically added as children of self.settings. Morevover, the self.settings_tree will
@@ -34,6 +39,9 @@ class CustomExtensionTemplate(gutils.CustomApp):
         # object: self.modules_manager which is a ModulesManager instance from the dashboard
 
         self.setup_ui()
+
+        self.red_mod, self.green_mod, self.blue_mod = (
+            self.modules_manager.get_mods_from_names(['Red', 'Green', 'Blue'], 'act'))
 
     def setup_docks(self):
         """Mandatory method to be subclassed to setup the docks layout
@@ -49,10 +57,11 @@ class CustomExtensionTemplate(gutils.CustomApp):
         --------
         pyqtgraph.dockarea.Dock
         """
-        # todo: create docks and add them here to hold your widgets
-        # reminder, the attribute self.settings_tree will  render the widgets in a Qtree.
-        # If you wish to see it in your app, add is into a Dock
-        raise NotImplementedError
+        self.color_button = ColorButton()
+        self.color_button.setMinimumHeight(100)
+        self.docks['color'] = gutils.Dock('Color')
+        self.dockarea.addDock(self.docks['color'])
+        self.docks['color'].addWidget(self.color_button)
 
     def setup_actions(self):
         """Method where to create actions to be subclassed. Mandatory
@@ -69,11 +78,21 @@ class CustomExtensionTemplate(gutils.CustomApp):
         --------
         ActionManager.add_action
         """
-        raise NotImplementedError(f'You have to define actions here')
+        pass
 
     def connect_things(self):
         """Connect actions and/or other widgets signal to methods"""
-        raise NotImplementedError
+        self.color_button.sigColorChanged.connect(self.set_color)
+
+    @property
+    def modules_manager(self) -> ModulesManager:
+        return super().modules_manager
+
+    def set_color(self):
+        red, green, blue, alpha = self.color_button.color().getRgb()
+        self.red_mod.move_abs(red)
+        self.green_mod.move_abs(green)
+        self.blue_mod.move_abs(blue)
 
     def setup_menu(self):
         """Non mandatory method to be subclassed in order to create a menubar
