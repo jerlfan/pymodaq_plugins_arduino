@@ -18,7 +18,12 @@ class Arduino(telemetrix.Telemetrix):
 
         self.pin_values_output = {}
 
+    @staticmethod
+    def round_value(value):
+        return max(0, min(255, int(value)))
+
     def analog_write_and_memorize(self, pin, value):
+        value = self.round_value(value)
         self.analog_write(pin, value)
         self.pin_values_output[pin] = value
 
