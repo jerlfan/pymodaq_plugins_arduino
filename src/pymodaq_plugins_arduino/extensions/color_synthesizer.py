@@ -1,3 +1,4 @@
+import numpy as np
 from qtpy import QtWidgets
 
 from pyqtgraph.widgets.ColorButton import ColorButton
@@ -8,6 +9,7 @@ from pymodaq.utils.logger import set_logger, get_module_name
 
 from pymodaq.utils.managers.modules_manager import ModulesManager
 from pymodaq.control_modules.daq_move import DAQ_Move
+from pymodaq_gui.utils.widgets.lcd import LCD
 
 # todo: replace here *pymodaq_plugins_template* by your plugin package name
 from pymodaq_plugins_arduino.utils import Config as PluginConfig
@@ -57,11 +59,12 @@ class ColorSynthesizer(gutils.CustomApp):
         --------
         pyqtgraph.dockarea.Dock
         """
-        self.color_button = ColorButton()
-        self.color_button.setMinimumHeight(100)
         self.docks['color'] = gutils.Dock('Color')
         self.dockarea.addDock(self.docks['color'])
-        self.docks['color'].addWidget(self.color_button)
+        widget = QtWidgets.QWidget()
+        self.lcd = LCD(widget, Nvals=3, labels=['Red', 'Green', 'Blue'])
+
+        self.docks['color'].addWidget(widget)
 
     def setup_actions(self):
         """Method where to create actions to be subclassed. Mandatory
@@ -78,21 +81,25 @@ class ColorSynthesizer(gutils.CustomApp):
         --------
         ActionManager.add_action
         """
-        pass
+        self.add_widget('color', ColorButton)
 
     def connect_things(self):
         """Connect actions and/or other widgets signal to methods"""
-        self.color_button.sigColorChanged.connect(self.set_color)
+        self.connect_action('color', self.set_color, signal_name='sigColorChanging')
 
     @property
     def modules_manager(self) -> ModulesManager:
         return super().modules_manager
 
     def set_color(self):
-        red, green, blue, alpha = self.color_button.color().getRgb()
+        red, green, blue, alpha = self.get_action('color').color().getRgb()
         self.red_mod.move_abs(red)
         self.green_mod.move_abs(green)
         self.blue_mod.move_abs(blue)
+
+        self.lcd.setvalues([np.array([red]),
+                            np.array([green]),
+                            np.array([blue])])
 
     def setup_menu(self):
         """Non mandatory method to be subclassed in order to create a menubar
@@ -144,7 +151,8 @@ def main():
         app.exec()
 
     except ConfigError as e:
-        messagebox(f'No entry with name f"preset_for_{CLASS_NAME.lower()}" has been configured'
+        messagebox(text=
+                   f'No entry with name f"preset_for_{CLASS_NAME.lower()}" has been configured'
                    f'in the plugin config file. The toml entry should be:\n'
                    f'[presets]'
                    f"preset_for_{CLASS_NAME.lower()} = {'a name for an existing preset'}"
