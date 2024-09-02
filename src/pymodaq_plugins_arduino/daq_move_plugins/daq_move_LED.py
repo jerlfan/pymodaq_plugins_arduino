@@ -26,7 +26,7 @@ class DAQ_Move_LED(DAQ_Move_base):
          hardware library.
          
     """
-    _controller_units = '%'
+    _controller_units = ''
     is_multiaxes = True
     _axis_names = {'Red': config('LED', 'pins', 'red_pin'),
                    'Green': config('LED', 'pins', 'green_pin'),
@@ -52,7 +52,7 @@ class DAQ_Move_LED(DAQ_Move_base):
         float: The position obtained after scaling conversion.
         """
 
-        pos = DataActuator(data=self.controller.get_output_pin_value(self.axis_value) * 100 / (2**8 - 1))  # when writing your own plugin replace this line
+        pos = DataActuator(data=self.controller.get_output_pin_value(self.axis_value))  # when writing your own plugin replace this line
         pos = self.get_position_with_scaling(pos)
         return pos
 
@@ -70,10 +70,7 @@ class DAQ_Move_LED(DAQ_Move_base):
             A given parameter (within detector_settings) whose value has been changed by the user
         """
         ## TODO for your custom plugin
-        if param.name() == "a_parameter_you've_added_in_self.params":
-           self.controller.your_method_to_apply_this_param_change()
-        else:
-            pass
+        pass
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
@@ -121,7 +118,7 @@ class DAQ_Move_LED(DAQ_Move_base):
 
         # value is set in percent
         self.controller.analog_write_and_memorize(self.axis_value,
-                                                  int(value.value() * (2**8 - 1) / 100))
+                                                  int(value.value()))
 
     def move_rel(self, value: DataActuator):
         """ Move the actuator to the relative target actuator value defined by value
@@ -136,7 +133,7 @@ class DAQ_Move_LED(DAQ_Move_base):
 
         # value is set in percent
         self.controller.analog_write_and_memorize(self.axis_value,
-                                                  int(self.target_value.value() * (2**8 - 1) / 100))
+                                                  int(self.target_value.value()))
 
     def move_home(self):
         """Call the reference method of the controller"""

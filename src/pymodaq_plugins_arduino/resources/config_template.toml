@@ -1,5 +1,8 @@
 title = 'this is the configuration file of the plugin Arduino'
 
+[presets]
+preset_for_colorsynthesizer = "ArduinoLEDMock"
+
 
 [LED]
 com_port = 'COM23'
