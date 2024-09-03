@@ -30,4 +30,11 @@ class Arduino(telemetrix.Telemetrix):
     def get_output_pin_value(self, pin: int):
         return self.pin_values_output[pin]
 
+    def ini_i2c(self, port: int = 0):
+        self.set_pin_mode_i2c(port)
+
+    def writeto(self, addr, bytes_to_write: bytes):
+        """ to use the interface proposed by the lcd_i2c package made for micropython originally"""
+        self.i2c_write(addr, [bytes_to_write])
+
 
