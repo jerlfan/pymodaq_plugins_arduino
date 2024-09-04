@@ -13,11 +13,11 @@ Ported here to be used with Telemetrix I2C primitives
 """
 
 # system packages
-from ..arduino_telemetrix import Arduino
+from pymodaq_plugins_arduino.hardware.arduino_telemetrix import Arduino
 from time import sleep
 
 # custom packages
-from . import const as Const
+from pymodaq_plugins_arduino.hardware.lcd_i2c import const as Const
 
 # typing not natively supported on MicroPython
 from typing import List, Optional, Tuple, Union
@@ -467,3 +467,15 @@ class LCD:
         :type       value:  int
         """
         self._i2c.writeto(self.addr, bytes([value | self._backlightval]))
+
+
+if __name__ == '__main__':
+    i2c = I2C(com_port='COM23')
+    i2c.ini_i2c()
+
+    lcd = LCD(0x27, 16, 2, i2c=i2c)
+    lcd.backlight()
+    pass
+
+    lcd.clear()
+    i2c.shutdown()
