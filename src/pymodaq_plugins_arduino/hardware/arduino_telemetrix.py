@@ -35,6 +35,6 @@ class Arduino(telemetrix.Telemetrix):
 
     def writeto(self, addr, bytes_to_write: bytes):
         """ to use the interface proposed by the lcd_i2c package made for micropython originally"""
-        self.i2c_write(addr, [bytes_to_write])
+        self.i2c_write(addr, [int.from_bytes(bytes_to_write)])
 
 
