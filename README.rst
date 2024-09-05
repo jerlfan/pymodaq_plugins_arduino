@@ -50,8 +50,8 @@ Below is the list of instruments included in this plugin
 Actuators
 +++++++++
 
-* **LED**: control of a multicolor LED using three PWM digital outputs. Allows the control of the three color channel
-  independently
+* **LED**: control of a multicolor LED using three PWM digital outputs and the Telemetrix library.
+  Allows the control of the three color channel independently
 * **LEDwithLCD**: same as **LED** actuator but displaying the red, green, blue values on a standard 16x2 liquid crystal
   display
 
