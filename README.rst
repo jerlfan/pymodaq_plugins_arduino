@@ -50,8 +50,10 @@ Below is the list of instruments included in this plugin
 Actuators
 +++++++++
 
-* **LED**: control of a multicolor LED using three PWM digital outputs. Allows the control of the three color channel
-  independently
+* **LED**: control of a multicolor LED using three PWM digital outputs and the Telemetrix library.
+  Allows the control of the three color channel independently
+* **LEDwithLCD**: same as **LED** actuator but displaying the red, green, blue values on a standard 16x2 liquid crystal
+  display
 
 .. if needed use this field
 
@@ -91,5 +93,15 @@ Installation instructions
 LED actuator
 ++++++++++++
 
-The LED actuator uses the telemetrix library. The correponding sketch should therefore be uploaded
-on the arduino board
+The LED actuator uses the telemetrix library. The corresponding sketch should therefore be uploaded
+on the arduino board. This allows to control peripheral on an Arduino board from python objects on the connected
+computer. See https://mryslab.github.io/telemetrix/
+
+LEDwithLCD actuator
++++++++++++++++++++
+
+The **LEDwithLCD** actuator uses the telemetrix library. The corresponding sketch should therefore be uploaded
+on the arduino board. It then uses the telemetrix I2C communication protocol to control a LCD equipped with a
+I2C backpack. The functionalities used to drive the LCD are adapted from a micropython code
+(https://github.com/brainelectronics/micropython-i2c-lcd) itself adapted from
+https://github.com/fdebrabander/Arduino-LiquidCrystal-I2C-library

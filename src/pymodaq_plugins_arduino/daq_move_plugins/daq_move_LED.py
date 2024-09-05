@@ -59,6 +59,7 @@ class DAQ_Move_LED(DAQ_Move_base):
     def close(self):
         """Terminate the communication protocol"""
         if self.is_master:
+            self.controller.set_pins_output_to(0)
             self.controller.shutdown()
 
     def commit_settings(self, param: Parameter):
