@@ -11,6 +11,7 @@ https://github.com/fdebrabander/Arduino-LiquidCrystal-I2C-library
 
 Ported here to be used with Telemetrix I2C primitives
 """
+import time
 
 # system packages
 from pymodaq_plugins_arduino.hardware.arduino_telemetrix import Arduino
@@ -31,11 +32,6 @@ def sleep_us(duration_us):
     return sleep(duration_us / 1e6)
 
 
-class I2C(Arduino):
-    def __init__(self, interface=0, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-
 class LCD:
     """Driver for the Liquid Crystal LCD displays that use the I2C bus"""
 
@@ -44,7 +40,7 @@ class LCD:
                  cols: int,
                  rows: int,
                  charsize: int = 0x00,
-                 i2c: Optional[I2C] = None) -> None:
+                 i2c: Optional[Arduino] = None) -> None:
         """
         Constructs a new instance.
 
@@ -66,7 +62,7 @@ class LCD:
         self._backlightval: int = Const.LCD_BACKLIGHT
         if i2c is None:
             # default assignment, check the docs
-            self._i2c = I2C(0)
+            raise IOError('no instance of I2C Arduino entered')
         else:
             self._i2c = i2c
 
@@ -470,12 +466,17 @@ class LCD:
 
 
 if __name__ == '__main__':
-    i2c = I2C(com_port='COM23')
+    i2c = Arduino(com_port='COM23')
     i2c.ini_i2c()
 
     lcd = LCD(0x27, 16, 2, i2c=i2c)
+    lcd.begin()
+    lcd.display()
     lcd.backlight()
-    pass
 
+    lcd.print('Hello Seb')
+
+    time.sleep(2)
     lcd.clear()
+    lcd.no_backlight()
     i2c.shutdown()
