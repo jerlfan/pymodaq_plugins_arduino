@@ -10,3 +10,8 @@ com_port = "COM23"
 red_pin = 9
 green_pin = 11
 blue_pin = 10
+
+[LCD]
+address = 0x27
+cols = 16
+rows = 2
