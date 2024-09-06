@@ -1,6 +1,5 @@
 from pymodaq.control_modules.move_utility_classes import main
 
-from pymodaq_plugins_arduino.hardware.arduino_telemetrix import Arduino
 from pymodaq_plugins_arduino.daq_move_plugins.daq_move_LED import DAQ_Move_LED
 from pymodaq_plugins_arduino.hardware.led_lcd import LED_LCD
 from pymodaq_plugins_arduino.utils import Config

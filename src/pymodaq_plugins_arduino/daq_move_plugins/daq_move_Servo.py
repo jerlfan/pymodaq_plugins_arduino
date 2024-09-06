@@ -13,7 +13,7 @@ from pymodaq_plugins_arduino.utils import Config
 config = Config()
 
 
-class DAQ_Move_LED(DAQ_Move_base):
+class DAQ_Move_Servo(DAQ_Move_base):
     """ Instrument plugin class for an actuator.
     
     This object inherits all functionalities to communicate with PyMoDAQ’s DAQ_Move module through inheritance via
@@ -28,18 +28,14 @@ class DAQ_Move_LED(DAQ_Move_base):
     """
     _controller_units = ''
     is_multiaxes = True
-    _axis_names = {'Red': config('LED', 'pins', 'red_pin'),
-                   'Green': config('LED', 'pins', 'green_pin'),
-                   'Blue': config('LED', 'pins', 'blue_pin'),
-                   }
-    _epsilon = 0.01
+    _axis_names = {'Servo': config('servo', 'pin')}
+    _epsilon = 1
     data_actuator_type = DataActuatorType['DataActuator']
 
     params = [
                  {'title': 'Ports:', 'name': 'com_port', 'type': 'list',
                   'value': config('com_port'), 'limits': Arduino.COM_PORTS}
-
-                ] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
+             ] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
 
     def ini_attributes(self):
         self.controller: Optional[Arduino] = None
@@ -52,7 +48,7 @@ class DAQ_Move_LED(DAQ_Move_base):
         float: The position obtained after scaling conversion.
         """
 
-        pos = DataActuator(data=self.controller.get_output_pin_value(self.axis_value))  # when writing your own plugin replace this line
+        pos = DataActuator(data=self.controller.get_output_pin_value(self.axis_value))
         pos = self.get_position_with_scaling(pos)
         return pos
 
@@ -95,15 +91,11 @@ class DAQ_Move_LED(DAQ_Move_base):
             self.controller = Arduino(
                 com_port=self.settings['com_port']
                                               )
-            self.set_pins()
+            self.controller.set_pin_mode_servo(config('servo', 'pin'))
 
         info = "Whatever info you want to log"
         initialized = True
         return info, initialized
-
-    def set_pins(self):
-        for pin in config('LED', 'pins').values():
-            self.controller.set_pin_mode_analog_output(pin)
 
     def move_abs(self, value: DataActuator):
         """ Move the actuator to the absolute target defined by value
@@ -117,8 +109,8 @@ class DAQ_Move_LED(DAQ_Move_base):
         self.target_value = value
         value = self.set_position_with_scaling(value)  # apply scaling if the user specified one
 
-        self.controller.analog_write_and_memorize(self.axis_value,
-                                                  int(value.value()))
+        self.controller.servo_move_degree(self.axis_value,
+                                          value.value())
 
     def move_rel(self, value: DataActuator):
         """ Move the actuator to the relative target actuator value defined by value
@@ -132,12 +124,12 @@ class DAQ_Move_LED(DAQ_Move_base):
         value = self.set_position_relative_with_scaling(value)
 
         # value is set in percent
-        self.controller.analog_write_and_memorize(self.axis_value,
-                                                  int(self.target_value.value()))
+        self.controller.servo_move_degree(self.axis_value,
+                                          self.target_value.value())
 
     def move_home(self):
         """Call the reference method of the controller"""
-        self.controller.analog_write_and_memorize(self.axis_value, 0)
+        self.controller.servo_move_degree(self.axis_value, 0)
 
     def stop_motion(self):
       """Stop the actuator and emits move_done signal"""

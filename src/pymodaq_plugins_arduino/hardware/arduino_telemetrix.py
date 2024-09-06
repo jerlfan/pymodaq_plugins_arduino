@@ -1,3 +1,5 @@
+import numbers
+
 from pyvisa import ResourceManager
 from telemetrix import telemetrix
 
@@ -31,7 +33,7 @@ class Arduino(telemetrix.Telemetrix):
         self.analog_write(pin, value)
         self.pin_values_output[pin] = value
 
-    def get_output_pin_value(self, pin: int):
+    def get_output_pin_value(self, pin: int) -> numbers.Number:
         return self.pin_values_output.get(pin, 0)
 
     def ini_i2c(self, port: int = 0):
@@ -39,4 +41,24 @@ class Arduino(telemetrix.Telemetrix):
 
     def writeto(self, addr, bytes_to_write: bytes):
         """ to use the interface proposed by the lcd_i2c package made for micropython originally"""
-        self.i2c_write(addr, [int.from_bytes(bytes_to_write)])
+        self.i2c_write(addr, [int.from_bytes(bytes_to_write, byteorder='big')])
+
+    def servo_move_degree(self, pin: int, value: float):
+        """ Move a servo motor to the value in degree between 0 and 180 degree"""
+        self.servo_write(pin, int(value * 255 / 180))
+        self.pin_values_output[pin] = value
+
+
+if __name__ == '__main__':
+    import time
+    tele = Arduino('COM23')
+    tele.set_pin_mode_servo(5, 100, 3000)
+    time.sleep(.2)
+
+    tele.servo_write(5, 90)
+
+    time.sleep(1)
+
+    tele.servo_write(5, 00)
+
+    tele.shutdown()
