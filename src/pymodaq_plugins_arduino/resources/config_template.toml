@@ -8,8 +8,8 @@ preset_for_colorsynthesizer = "ArduinoLED"
 [LED]
 [LED.pins]
 red_pin = 9
-green_pin = 11
-blue_pin = 10
+green_pin = 10
+blue_pin = 11
 
 [LCD]
 address = 0x27
@@ -17,4 +17,4 @@ cols = 16
 rows = 2
 
 [servo]
-pin = 5
+pin = 3
