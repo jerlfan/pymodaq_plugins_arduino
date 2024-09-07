@@ -91,7 +91,7 @@ class DAQ_Move_Servo(DAQ_Move_base):
             self.controller = Arduino(
                 com_port=self.settings['com_port']
                                               )
-            self.controller.set_pin_mode_servo(config('servo', 'pin'))
+        self.controller.set_pin_mode_servo(config('servo', 'pin'))
 
         info = "Whatever info you want to log"
         initialized = True
