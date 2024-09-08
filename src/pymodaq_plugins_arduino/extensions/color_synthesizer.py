@@ -9,7 +9,7 @@ from pymodaq.utils.logger import set_logger, get_module_name
 
 from pymodaq.utils.managers.modules_manager import ModulesManager
 from pymodaq.control_modules.daq_move import DAQ_Move
-from pymodaq_gui.utils.widgets.lcd import LCD
+from pymodaq.utils.gui_utils.widgets.lcd import LCD
 
 # todo: replace here *pymodaq_plugins_template* by your plugin package name
 from pymodaq_plugins_arduino.utils import Config as PluginConfig
