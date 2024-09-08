@@ -41,9 +41,7 @@ class Arduino(telemetrix.Telemetrix):
         lock.release()
 
     def get_output_pin_value(self, pin: int) -> numbers.Number:
-        lock.acquire()
         value = self.pin_values_output.get(pin, 0)
-        lock.release()
         return value
 
     def ini_i2c(self, port: int = 0):
