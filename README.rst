@@ -29,19 +29,6 @@ Authors
 * Sebastien J. Weber  (sebastien.weber@cemes.fr)
 
 
-.. if needed use this field
-
-    Contributors
-    ============
-
-    * First Contributor
-    * Other Contributors
-
-.. if needed use this field
-
-  Depending on the plugin type, delete/complete the fields below
-
-
 Instruments
 ===========
 
@@ -55,33 +42,8 @@ Actuators
 * **LEDwithLCD**: same as **LED** actuator but displaying the red, green, blue values on a standard 16x2 liquid crystal
   display
 
-.. if needed use this field
-
-    Viewer0D
-    ++++++++
-
-    * **yyy**: control of yyy 0D detector
-    * **xxx**: control of xxx 0D detector
-
-    Viewer1D
-    ++++++++
-
-    * **yyy**: control of yyy 1D detector
-    * **xxx**: control of xxx 1D detector
-
-
-    Viewer2D
-    ++++++++
-
-    * **yyy**: control of yyy 2D detector
-    * **xxx**: control of xxx 2D detector
-
-
-    PID Models
-    ==========
-
-    Extensions
-    ==========
+Extensions
+==========
 
 
 Installation instructions
