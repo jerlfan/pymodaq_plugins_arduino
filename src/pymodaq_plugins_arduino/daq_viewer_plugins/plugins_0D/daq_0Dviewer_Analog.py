@@ -35,16 +35,48 @@ class DAQ_0DViewer_Analog(DAQ_Viewer_base):
     _controller_units=''
     params = comon_parameters + [{'title': 'Ports:', 'name': 'com_port', 'type': 'list',
                   'value': config('com_port'), 'limits': Arduino.COM_PORTS},
-        {'title': 'AI:', 'name': 'ai_channel', 'type': 'list','limits':['0','1','2','3','4','5'],
-         'value':'2'}
+        {'name':'AI0', 'type':'group','children':[
+            {'title': 'Channel', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
+             'tip':'clickto change status, Green: On, Red: Off'},
+            {'title': 'Units:', 'name': 'ai_ch0_units', 'type': 'list',
+             'limits': ['Integer bit','Volts','pH Units', 'Absorbance', 'Transmitance'],
+             'value': 'Volts'},
+        ]},{'name':'AI1', 'type':'group','children':[
+            {'title': 'Channel', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
+             'tip':'clickto change status, Green: On, Red: Off'},
+            {'title': 'Units:', 'name': 'ai_ch1_units', 'type': 'list',
+             'limits': ['Integer bit','Volts','pH Units', 'Absorbance', 'Transmitance'],
+             'value': 'Volts'},
+        ]},{'name':'AI2', 'type':'group','children':[
+            {'title': 'Channel', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
+             'tip':'clickto change status, Green: On, Red: Off'},
+            {'title': 'Units:', 'name': 'ai_ch2_units', 'type': 'list',
+             'limits': ['Integer bit','Volts','pH Units', 'Absorbance', 'Transmitance'],
+             'value': 'Volts'},
+        ]},{'name':'AI3', 'type':'group','children':[
+            {'title': 'Channel', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
+             'tip':'clickto change status, Green: On, Red: Off'},
+            {'title': 'Units:', 'name': 'ai_ch3_units', 'type': 'list',
+             'limits': ['Integer bit','Volts','pH Units', 'Absorbance', 'Transmitance'],
+             'value': 'Volts'},
+        ]},{'name':'AI4', 'type':'group','children':[
+            {'title': 'Channel', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
+             'tip':'clickto change status, Green: On, Red: Off'},
+            {'title': 'Units:', 'name': 'ai_ch4_units', 'type': 'list',
+             'limits': ['Integer bit','Volts','pH Units', 'Absorbance', 'Transmitance'],
+             'value': 'Volts'},
+        ]},{'name':'AI5', 'type':'group','children':[
+            {'title': 'Channel', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
+             'tip':'clickto change status, Green: On, Red: Off'},
+            {'title': 'Units:', 'name': 'ai_ch5_units', 'type': 'list',
+             'limits': ['Integer bit','Volts','pH Units', 'Absorbance', 'Transmitance'],
+             'value': 'Volts'},
+        ]}
+
     ]
 
     def ini_attributes(self):
-        #  TODO declare the type of the wrapper (and assign it to self.controller) you're going to use for easy
-        #  autocompletion
         self.controller: Optional[Arduino] = None
-
-        # TODO declare here attributes you want/need to init with a default value
         pass
 
     def commit_settings(self, param: Parameter):
@@ -56,8 +88,37 @@ class DAQ_0DViewer_Analog(DAQ_Viewer_base):
             A given parameter (within detector_settings) whose value has been changed by the user
         """
         ## TODO for your custom plugin
-        if param.name() == "ai_channel":
-            self.controller.set_analog_input(param.value())  # when writing your own plugin replace this line
+        if param.name() == "ai0":
+            if param.value():
+                self.controller.set_analog_input(0)
+            else:
+                self.controller.disable_analog_reporting(0)
+        if param.name() == "ai1":
+            if param.value():
+                self.controller.set_analog_input(1)
+            else:
+                self.controller.disable_analog_reporting(1)
+        if param.name() == "ai2":
+            if param.value():
+                self.controller.set_analog_input(2)
+            else:
+                self.controller.disable_analog_reporting(2)
+        if param.name() == "ai3":
+            if param.value():
+                self.controller.set_analog_input(3)
+            else:
+                self.controller.disable_analog_reporting(3)
+        if param.name() == "ai4":
+            if param.value():
+                self.controller.set_analog_input(4)
+            else:
+                self.controller.disable_analog_reporting(4)
+        if param.name() == "ai5":
+            if param.value():
+                self.controller.set_analog_input(5)
+            else:
+                self.controller.disable_analog_reporting(5)
+        # when writing your own plugin replace this line
 
     #        elif ...
     ##
@@ -82,14 +143,17 @@ class DAQ_0DViewer_Analog(DAQ_Viewer_base):
 
         if self.is_master:
             self.controller = Arduino(com_port=self.settings['com_port'])  # instantiate you driver with whatever arguments are needed
-            #self.controller.open_communication()  # call eventual methods
+
 
         # TODO for your custom plugin (optional) initialize viewers panel with the future type of data
-        #self.dte_signal_temp.emit(DataToExport(name='AnalogInput',
-        #                                       data=[DataFromPlugins(name='Mock1',
-        #                                                             data=[np.array([0]), np.array([0])],
-        #                                                             dim='Data0D',
-         #                                                            labels=['Mock1', 'label2'])]))
+        self.dte_signal_temp.emit(DataToExport(name='AnalogInput',
+                                               data=[DataFromPlugins(name='Mock1',
+                                                                     data=[np.array([0]), np.array([0]),
+                                                                           np.array([0]), np.array([0]),
+                                                                           np.array([0]), np.array([0])],
+                                                                     dim='Data0D',
+                                                                     labels=['AI0', 'AI1', 'AI2', 'AI3', 'AI4',
+                                                                             'AI5'])]))
         #self.controller.analog_pin_values_input
         info = "Analog ready"
         initialized = True
@@ -111,11 +175,21 @@ class DAQ_0DViewer_Analog(DAQ_Viewer_base):
         kwargs: dict
             others optionals arguments
         """
-        self.controller.set_analog_input(2)
-        data_tot = self.controller.analog_pin_values_input[2]
+        #self.settings.child('')
+        data_tot=[]
+
+        for param in self.settings.children():
+            if 'AI' in param.name():
+                if param['ch']:
+                    self.controller.set_analog_input(int(param.name()[2:3]))
+                    data_tot.append(np.array([self.controller.analog_pin_values_input[int(param.name()[2:3])]]))
+                else:
+                    data_tot.append(np.array([0]))
+
         self.dte_signal.emit(DataToExport(name='Analog Input',
                                           data=[DataFromPlugins(name='AI', data=data_tot,
-                                                                dim='Data0D', labels=['dat0', 'data1'])]))
+                                                                dim='Data0D', labels=['AI0', 'AI1', 'AI2', 'AI3', 'AI4',
+                                                                             'AI5'])]))
 
 
     def callback(self):
