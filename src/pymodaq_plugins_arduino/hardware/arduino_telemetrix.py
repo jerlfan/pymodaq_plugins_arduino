@@ -21,8 +21,12 @@ class Arduino(telemetrix.Telemetrix):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.pin_values_output = {}
-        self.analog_pin_values_input = {0:0,1:0,2:0,3:0,4:0,5:0} # Initialized dictionnary for 6 analog channels
-
+        self.analog_pin_values_input = {0: 0,
+                                        1: 0,
+                                        2: 0,
+                                        3: 0,
+                                        4: 0,
+                                        5: 0}  # Initialized dictionary for 6 analog channels
 
     @staticmethod
     def round_value(value):
@@ -34,7 +38,6 @@ class Arduino(telemetrix.Telemetrix):
             self.analog_write(pin, int(value))
         lock.release()
 
-
     def analog_write_and_memorize(self, pin, value):
         lock.acquire()
         value = self.round_value(value)
@@ -42,7 +45,7 @@ class Arduino(telemetrix.Telemetrix):
         self.pin_values_output[pin] = value
         lock.release()
 
-    def read_analog_pin(self,data):
+    def read_analog_pin(self, data):
         """
         Used as a callback function to read the value of the analog inputs.
         Data[0]: pin_type (not used here)
@@ -53,9 +56,9 @@ class Arduino(telemetrix.Telemetrix):
         :return: a dictionary with the following structure {pin_number(int):pin_value(int)}
         With an arduino up to 6 analog input might be interrogated at the same time
         """
-        self.analog_pin_values_input[data[1]] = data[2]*5.0/1023 #Data in Volts
+        self.analog_pin_values_input[data[1]] = data[2]  # data are integer from 0 to 1023 in case Arduino UNO
 
-    def set_analog_input(self,pin):
+    def set_analog_input(self, pin):
         """
         Activate the analog pin, make an acquisition, write in the callback, stop the analog reporting
         :param pin: pin number 1 is A1 etc...
@@ -68,7 +71,6 @@ class Arduino(telemetrix.Telemetrix):
         lock.acquire()
         self.set_pin_mode_analog_input(pin, differential=0, callback=self.read_analog_pin)
         self.set_analog_scan_interval(1)
-        #time.sleep(0.001)
         self.disable_analog_reporting(pin)
         lock.release()
 

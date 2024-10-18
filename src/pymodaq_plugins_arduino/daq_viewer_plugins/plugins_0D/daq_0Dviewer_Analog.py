@@ -1,5 +1,4 @@
 import numpy as np
-from pymodaq.utils.daq_utils import ThreadCommand
 from pymodaq.utils.data import DataFromPlugins, DataToExport
 from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, comon_parameters, main
 from pymodaq.utils.parameter import Parameter
@@ -9,7 +8,8 @@ from typing import Optional
 from pymodaq_plugins_arduino.hardware.arduino_telemetrix import Arduino
 from pymodaq_plugins_arduino.utils import Config
 
-config=Config()
+
+config = Config()
 class DAQ_0DViewer_Analog(DAQ_Viewer_base):
     """ Instrument plugin class for a OD viewer.
 
@@ -29,45 +29,44 @@ class DAQ_0DViewer_Analog(DAQ_Viewer_base):
         The particular object that allow the communication with the hardware, in general a python wrapper around the
          hardware library.
 
-    # TODO add your particular attributes here if any
-
-    """
+   """
     _controller_units=''
     params = comon_parameters + [{'title': 'Ports:', 'name': 'com_port', 'type': 'list',
                   'value': config('com_port'), 'limits': Arduino.COM_PORTS},
+        {'title': 'Separated viewers', 'name': 'sep_viewers', 'type': 'bool', 'value': False},
         {'name':'AI0', 'type':'group','children':[
-            {'title': 'Channel', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
-             'tip':'clickto change status, Green: On, Red: Off'},
+            {'title': 'Activate', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
+             'tip':'click to change status, Green: On, Red: Off'},
             {'title': 'Units:', 'name': 'ai_ch0_units', 'type': 'list',
              'limits': ['Integer bit','Volts','pH Units', 'Absorbance', 'Transmitance'],
              'value': 'Volts'},
         ]},{'name':'AI1', 'type':'group','children':[
-            {'title': 'Channel', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
-             'tip':'clickto change status, Green: On, Red: Off'},
+            {'title': 'Activate', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
+             'tip':'click to change status, Green: On, Red: Off'},
             {'title': 'Units:', 'name': 'ai_ch1_units', 'type': 'list',
              'limits': ['Integer bit','Volts','pH Units', 'Absorbance', 'Transmitance'],
              'value': 'Volts'},
         ]},{'name':'AI2', 'type':'group','children':[
-            {'title': 'Channel', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
-             'tip':'clickto change status, Green: On, Red: Off'},
+            {'title': 'Activate', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
+             'tip':'click to change status, Green: On, Red: Off'},
             {'title': 'Units:', 'name': 'ai_ch2_units', 'type': 'list',
              'limits': ['Integer bit','Volts','pH Units', 'Absorbance', 'Transmitance'],
              'value': 'Volts'},
         ]},{'name':'AI3', 'type':'group','children':[
-            {'title': 'Channel', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
-             'tip':'clickto change status, Green: On, Red: Off'},
+            {'title': 'Activate', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
+             'tip':'click to change status, Green: On, Red: Off'},
             {'title': 'Units:', 'name': 'ai_ch3_units', 'type': 'list',
              'limits': ['Integer bit','Volts','pH Units', 'Absorbance', 'Transmitance'],
              'value': 'Volts'},
         ]},{'name':'AI4', 'type':'group','children':[
-            {'title': 'Channel', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
-             'tip':'clickto change status, Green: On, Red: Off'},
+            {'title': 'Activate', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
+             'tip':'click to change status, Green: On, Red: Off'},
             {'title': 'Units:', 'name': 'ai_ch4_units', 'type': 'list',
              'limits': ['Integer bit','Volts','pH Units', 'Absorbance', 'Transmitance'],
              'value': 'Volts'},
         ]},{'name':'AI5', 'type':'group','children':[
-            {'title': 'Channel', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
-             'tip':'clickto change status, Green: On, Red: Off'},
+            {'title': 'Activate', 'name': 'ch', 'type': 'led_push', 'value':False, 'label':'On/Off',
+             'tip':'click to change status, Green: On, Red: Off'},
             {'title': 'Units:', 'name': 'ai_ch5_units', 'type': 'list',
              'limits': ['Integer bit','Volts','pH Units', 'Absorbance', 'Transmitance'],
              'value': 'Volts'},
@@ -87,7 +86,6 @@ class DAQ_0DViewer_Analog(DAQ_Viewer_base):
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
         """
-        ## TODO for your custom plugin
         if param.name() == "ai0":
             if param.value():
                 self.controller.set_analog_input(0)
@@ -118,10 +116,7 @@ class DAQ_0DViewer_Analog(DAQ_Viewer_base):
                 self.controller.set_analog_input(5)
             else:
                 self.controller.disable_analog_reporting(5)
-        # when writing your own plugin replace this line
 
-    #        elif ...
-    ##
 
     def ini_detector(self, controller=None):
         """Detector communication initialization
@@ -144,17 +139,6 @@ class DAQ_0DViewer_Analog(DAQ_Viewer_base):
         if self.is_master:
             self.controller = Arduino(com_port=self.settings['com_port'])  # instantiate you driver with whatever arguments are needed
 
-
-        # TODO for your custom plugin (optional) initialize viewers panel with the future type of data
-        self.dte_signal_temp.emit(DataToExport(name='AnalogInput',
-                                               data=[DataFromPlugins(name='Mock1',
-                                                                     data=[np.array([0]), np.array([0]),
-                                                                           np.array([0]), np.array([0]),
-                                                                           np.array([0]), np.array([0])],
-                                                                     dim='Data0D',
-                                                                     labels=['AI0', 'AI1', 'AI2', 'AI3', 'AI4',
-                                                                             'AI5'])]))
-        #self.controller.analog_pin_values_input
         info = "Analog ready"
         initialized = True
         return info, initialized
@@ -175,29 +159,30 @@ class DAQ_0DViewer_Analog(DAQ_Viewer_base):
         kwargs: dict
             others optionals arguments
         """
-        #self.settings.child('')
         data_tot=[]
+        channel_available=[]
 
         for param in self.settings.children():
             if 'AI' in param.name():
                 if param['ch']:
+                    channel_available.append(int(param.name()[2:3]))
                     self.controller.set_analog_input(int(param.name()[2:3]))
                     data_tot.append(np.array([self.controller.analog_pin_values_input[int(param.name()[2:3])]]))
-                else:
-                    data_tot.append(np.array([0]))
 
-        self.dte_signal.emit(DataToExport(name='Analog Input',
+        if self.settings.child('sep_viewers').value():
+            dat = DataToExport('Analog0D',
+                               data=[DataFromPlugins(name=f'AI{channel_available[ind]}', data=[data],
+                                                     dim='Data0D',
+                                                     labels=[f'AI{channel_available[ind]} data '])
+                                                             for ind, data in enumerate(data_tot)])
+            self.dte_signal.emit(dat)
+        else:
+            self.dte_signal.emit(DataToExport(name='Analog Input',
                                           data=[DataFromPlugins(name='AI', data=data_tot,
-                                                                dim='Data0D', labels=['AI0', 'AI1', 'AI2', 'AI3', 'AI4',
-                                                                             'AI5'])]))
+                                                                dim='Data0D',
+                                                                labels=[f'AI{channel_available[ind]} data '
+                                                                        for ind, data in enumerate(data_tot)])]))
 
-
-    def callback(self):
-        """optional asynchrone method called when the detector has finished its acquisition of data"""
-        data_tot = self.controller.your_method_to_get_data_from_buffer()
-        self.dte_signal.emit(DataToExport(name='myplugin',
-                                          data=[DataFromPlugins(name='Mock1', data=data_tot,
-                                                                dim='Data0D', labels=['dat0', 'data1'])]))
 
     def stop(self):
         """Stop the current grab hardware wise if necessary"""
