@@ -72,6 +72,8 @@ def step_absolute(the_board):
     # pin1 = pulse pin, pin2 = direction
     motor = the_board.set_pin_mode_stepper(interface=1, pin1=PULSE_PIN,
                                                  pin2=DIRECTION_PIN)
+    the_board.set_pin_mode_digital_output(7)
+    the_board.digital_write(7, 1)  # enable the motor driver
 
     # if you are using a 28BYJ-48 Stepper Motor with ULN2003
     # comment out the line above and uncomment out the line below.
@@ -79,8 +81,8 @@ def step_absolute(the_board):
     # pin4=12)
 
     # the_board.stepper_is_running(motor, callback=running_callback)
-    time.sleep(.5)
-
+    time.sleep(5)
+    the_board.digital_write(7, 0)
     # set the max speed and acceleration
     the_board.stepper_set_current_position(0, 0)
     the_board.stepper_set_max_speed(motor, 400)
