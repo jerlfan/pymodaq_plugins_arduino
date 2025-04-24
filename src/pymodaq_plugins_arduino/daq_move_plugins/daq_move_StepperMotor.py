@@ -37,33 +37,23 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
     # TODO add your particular attributes here if any
 
     """
-    is_multiaxes = False
-     # Configured for only two axiss, but can be changed to 8 axes.
+    is_multiaxes = True
+     # Configured for only two stepper motors with arduino Uno board.
     _axis_names: Union[List[str], Dict[str, int]] = {'Axis0':0, 'Axis1':1}
-    # Here all axes are translations stages with the same unit if difefrent type of stages are used as for example one translation and one rotation the dict must be updated in consequences.
-    _controller_units: Union[str, List[str]] = {'Axis0': 'mm', 'Axis1': 'mm'}
-     # WARNING: Please refer to your specific stage to set a meaningful value. If you use different type of stages (ex: translation and rotation) it can be replaced by the appropriate epsilon value.
-    _epsilon: Union[float, List[float]] = 0.00001 
+    # TODO changing the name using the config file is not implemented yet.
+    _controller_units: Union[str, List[str]] = ''
+    _epsilon: Union[float, List[float]] = 1 
     data_actuator_type = DataActuatorType.DataActuator  
-    # # wether you use the new data style for actuator otherwise set this
-    # as  DataActuatorType.float  (or entirely remove the line)
-    # At this step I will not use the new data dtyle it might be implemented in the future
     
-    params = [ {'title': 'Serial Number', 'name': 'serial_num', 'type': 'str', 
-                'value': '', 'readonly': True,},
-                {'title': 'Buffer Number', 'name': 'buff_num', 'type': 'int', 
-                'value': 1, 'limits': [0, 9],}  
+    
+    params = [ {{'title': 'Ports:', 'name': 'com_port', 'type': 'list',
+                  'value': config('com_port'), 'limits': Arduino.COM_PORTS} 
                 ] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
     # _epsilon is the initial default value for the epsilon parameter allowing pymodaq to know if the controller reached
     # the target value. It is the developer responsibility to put here a meaningful value
 
     def ini_attributes(self):
-        #  TODO declare the type of the wrapper (and assign it to self.controller) you're going to use for easy
-        #  autocompletion
-        self.controller: Controller = None
-
-        #TODO declare here attributes you want/need to init with a default value
-        pass
+        self.controller: Optional[Arduino] = None
 
     def get_actuator_value(self):
         """Get the current value from the hardware with scaling conversion.
@@ -79,19 +69,15 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
         pos = self.get_position_with_scaling(pos)
         return pos
 
-    def user_condition_to_reach_target(self) -> bool:
-        """ Implement a condition for exiting the polling mechanism and specifying that the
-        target value has been reached
+    def move_done_callback(self, val: int):
+        """Will be triggered for each end of move; abs, rel or homing"""
+        self._move_done = True
+        self.stop_motion()
+        logger.debug('Callback called')
 
-       Returns
-        -------
-        bool: if True, PyMoDAQ considers the target value has been reached
-        """
-        # TODO either delete this method if the usual polling is fine with you, but if need you can
-        #  add here some other condition to be fullfilled either a completely new one or
-        #  using or/and operations between the epsilon_bool and some other custom booleans
-        #  for a usage example see DAQ_Move_brushlessMotor from the Thorlabs plugin
-        return True
+    def user_condition_to_reach_target(self) -> bool:
+        """ Will be triggered for each end of move; abs, rel or homing"""
+        return self._move_done
 
     def close(self):
         """Terminate the communication protocol"""
