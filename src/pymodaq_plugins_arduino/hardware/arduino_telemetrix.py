@@ -28,7 +28,7 @@ class Arduino(telemetrix.Telemetrix):
                                         5: 0}  # Initialized dictionary for 6 analog channels
         self.stepper_motor = None
         self.completion_event = Event()
-
+        
     @staticmethod
     def round_value(value):
         return max(0, min(255, int(value)))
@@ -129,6 +129,21 @@ class Arduino(telemetrix.Telemetrix):
     def _stepper_callback(self, data):
         """ Callback function to signal that the stepper motor has completed its movement """
         self.completion_event.set() # Signal that the motion is complete
+        
+    
+    def get_stepper_position(self):
+        """ Retrieve the current position of the stepper motor """
+        position_event = Event()
+        def position_callback(data):
+            """ Callback function to retrieve the current position of the stepper motor """
+            self.position = data[2]
+            position_event.set()
+        
+        self.stepper_get_current_position(self.stepper_motor, 
+                                          current_position_callback=position_callback)
+        position_event.wait()
+        print(f'move to {self.position}')
+        return self.position
 
 if __name__ == '__main__':
     import time
@@ -143,10 +158,14 @@ if __name__ == '__main__':
 
     # Test stepper motor
     tele.initialize_stepper_motor(pulse_pin=8, direction_pin=9, enable_pin=7)
-    tele.move_stepper_to_position(2000) # Move to position 2000
-    time.sleep(2)
-    tele.move_stepper_to_position(-2000) # Move to position -2000
-    time.sleep(2)           
-
+    tele.get_stepper_position()
+    time.sleep(0.2)
+    tele.move_stepper_to_position(500) # Move to position 2000
+    time.sleep(0.2)
+    tele.get_stepper_position()
+    time.sleep(0.2)
+    tele.move_stepper_to_position(-500) # Move to position -2000
+    time.sleep(0.2)           
+    tele.get_stepper_position()
 
     tele.shutdown()

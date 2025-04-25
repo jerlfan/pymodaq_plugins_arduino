@@ -39,15 +39,15 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
     """
     is_multiaxes = True
      # Configured for only two stepper motors with arduino Uno board.
-    _axis_names: Union[List[str], Dict[str, int]] = {'Axis0':0, 'Axis1':1}
+    _axis_names: Union[List[str], Dict[str, int]] = {'Motor0':0, 'Motor1':1}
     # TODO changing the name using the config file is not implemented yet.
     _controller_units: Union[str, List[str]] = ''
     _epsilon: Union[float, List[float]] = 1 
     data_actuator_type = DataActuatorType.DataActuator  
     
     
-    params = [ {{'title': 'Ports:', 'name': 'com_port', 'type': 'list',
-                  'value': config('com_port'), 'limits': Arduino.COM_PORTS} 
+    params = [ {'title': 'Ports:', 'name': 'com_port', 'type': 'list',
+                  'value': config('com_port'), 'limits': Arduino.COM_PORTS}, 
                 ] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
     # _epsilon is the initial default value for the epsilon parameter allowing pymodaq to know if the controller reached
     # the target value. It is the developer responsibility to put here a meaningful value
