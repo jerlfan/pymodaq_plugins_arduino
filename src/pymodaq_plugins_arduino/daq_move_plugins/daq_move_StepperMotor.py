@@ -33,7 +33,7 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
   
     """
     is_multiaxes = True
-    _axis_names: Union[List[str], Dict[str, int]] = {'Stepper':0}
+    _axis_names: Union[List[str], Dict[str, int]] = {'Stepper':config('stepper')}
     _controller_units: Union[str, List[str]] = '' #steps
     _epsilon: Union[float, List[float]] = 1 
     data_actuator_type = DataActuatorType.float    
@@ -140,9 +140,8 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
     
 
     def stop_motion(self):
-      """Stop the actuator and emits move_done signal"""
-        pass
-
+      """Stop the actuator and emits move_done signal """
+      pass
 
 if __name__ == '__main__':
     main(__file__)
