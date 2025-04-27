@@ -1,47 +1,41 @@
 
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Optional
 from pymodaq.control_modules.move_utility_classes import (DAQ_Move_base, comon_parameters_fun,
                                                           main, DataActuatorType, DataActuator)
 
 from pymodaq_utils.utils import ThreadCommand  # object used to send info back to the main thread
 from pymodaq_gui.parameter import Parameter
 
-from pymodaq_plugins_arduino.hardware.arduino_telemetrix import Arduino # ACS controller wrapper
+from pymodaq_plugins_arduino.hardware.arduino_telemetrix import Arduino 
+from pymodaq_plugins_arduino.utils import Config
 
+config = Config()
 
 class DAQ_Move_StepperMotor(DAQ_Move_base):
-    """ Minimalistic plugin to control ACS motion stages with PyMoDAQ.
+    """ Plugin to control stepper motor using Arduino controller and PyMoDAQ.
     
     This object inherits all functionalities to communicate with PyMoDAQ’s DAQ_Move module through inheritance via
     DAQ_Move_base. It makes a bridge between the DAQ_Move module and the Python wrapper of a particular instrument.
 
-    Use the ACSpy package wrapper to communicate with the ACS motion stages. 
-    It may works with up to 8 axes depending the configuration.
+    Use the arduino_telemetrix wrapper to communicate with the Arduino Board. 
+    It may works with up to 4 axes depending the configuration.
     It does not consider the daisy chain option: only one controller.
-    Only ETHERNET communication is implemented (see ACS manual for configuration).
-    (It has been tested with USB to ethernet adapter).
-    Tested with ACS SPiiPlusEC controller and one drive UDMnt(2 axes).
-    The stages were alio's translation stages  AI-CM-6000-XY.
+    Tested with Aarduino UNo and one motor NEMA17 (1 axe).
     PyMoDAQ version during the test was PyMoDAQ==5.0.5.
     The operating system used was Windows 11.
-    Installation instructions: ACS drivers must be installed from the manufacturer's.
-    They usually come with the controller and with a "buffer" file for coniguration.
+    Telemetrix4arduino has to be upload on the Arduino board.
     
-  
     Attributes:
     -----------
     controller: object
         The particular object that allow the communication with the hardware, in general a python wrapper around the
          hardware library.
-         
-    # TODO add your particular attributes here if any
-
+  
     """
     is_multiaxes = True
-     # Configured for only two stepper motors with arduino Uno board.
     _axis_names: Union[List[str], Dict[str, int]] = {'Motor0':0, 'Motor1':1}
     # TODO changing the name using the config file is not implemented yet.
-    _controller_units: Union[str, List[str]] = ''
+    _controller_units: Union[str, List[str]] = '' #steps
     _epsilon: Union[float, List[float]] = 1 
     data_actuator_type = DataActuatorType.DataActuator  
     
@@ -49,9 +43,7 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
     params = [ {'title': 'Ports:', 'name': 'com_port', 'type': 'list',
                   'value': config('com_port'), 'limits': Arduino.COM_PORTS}, 
                 ] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
-    # _epsilon is the initial default value for the epsilon parameter allowing pymodaq to know if the controller reached
-    # the target value. It is the developer responsibility to put here a meaningful value
-
+   
     def ini_attributes(self):
         self.controller: Optional[Arduino] = None
 
@@ -69,20 +61,13 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
         pos = self.get_position_with_scaling(pos)
         return pos
 
-    def move_done_callback(self, val: int):
-        """Will be triggered for each end of move; abs, rel or homing"""
-        self._move_done = True
-        self.stop_motion()
-        logger.debug('Callback called')
-
     def user_condition_to_reach_target(self) -> bool:
         """ Will be triggered for each end of move; abs, rel or homing"""
         return self._move_done
 
     def close(self):
         """Terminate the communication protocol"""
-        self.controller.disable_all()
-        self.controller.disconnect()
+        self.controller.shutdown()
 
     def commit_settings(self, param: Parameter):
         """Apply the consequences of a change of value in the detector settings
@@ -123,7 +108,7 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
         self.ini_stage_init(slave_controller=controller)  # will be useful when controller is slave
 
         if self.is_master:  # is needed when controller is master
-            self.controller = Controller(contype="ethernet", n_axes=2) 
+            self.controller = self.Controller(contype="ethernet", n_axes=2) 
             self.controller.connect()  # any object that will control the stages
             self.controller.enable_all()  # enable all axes
             self.settings['serial_num']=self.controller.serial_number()
