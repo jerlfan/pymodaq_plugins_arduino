@@ -27,8 +27,7 @@ class Arduino(telemetrix.Telemetrix):
                                         4: 0,
                                         5: 0}  # Initialized dictionary for 6 analog channels
         self.stepper_motor = None
-        self.completion_event = Event()
-        
+                
     @staticmethod
     def round_value(value):
         return max(0, min(255, int(value)))
@@ -114,17 +113,17 @@ class Arduino(telemetrix.Telemetrix):
         # Set motor parameters
         self.stepper_set_max_speed(self.stepper_motor, max_speed)
         self.stepper_set_acceleration(self.stepper_motor, acceleration)
-
         # Set the target position
         self.stepper_move_to(self.stepper_motor, int(position))
-
-        # Run the motor and wait for completion
-        print(f'Starting motor to move to position {position}...')
-        self.completion_event.clear()
-        self.digital_write(self.enable, 0)  # Enable the motor driver
-        self.stepper_run(self.stepper_motor, completion_callback=self._stepper_callback)
-        self.completion_event.wait()
-        self.digital_write(self.enable, 1)   # Disable the motor driver
+        completion_event = Event()
+        def completion_callback(data):
+            """ Callback function to signal that the stepper motor has completed its movement """
+            completion_event.set()
+        self.digital_write(self.enable, 0)
+        self.stepper_run(self.stepper_motor, completion_callback=completion_callback)
+        completion_event.wait()
+        self.digital_write(self.enable, 1)
+        return True
 
     def _stepper_callback(self, data):
         """ Callback function to signal that the stepper motor has completed its movement """

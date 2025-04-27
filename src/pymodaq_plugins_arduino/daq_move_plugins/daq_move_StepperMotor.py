@@ -60,8 +60,7 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
 
     def user_condition_to_reach_target(self) -> bool:
         """ Will be triggered for each end of move; abs, rel or homing"""
-        #åreturn self._move_done
-        pass
+        return self._move_done
 
     def close(self):
         """Terminate the communication protocol"""
@@ -99,11 +98,7 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
             self.controller = Arduino(
                 com_port=self.settings['com_port']
                 )
-            self.controller.initialize_stepper_motor(
-                config('stepper','pins','pul_pin'),
-                config('stepper','pins','dir_pin'),
-                config('stepper','pins','ena_pin')
-                ) 
+            self.controller.initialize_stepper_motor(8, 9, 7)  # pulse, direction, enable pins
            
           
         info = "Stepper motor connected with config file "
@@ -121,7 +116,7 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
         value = self.check_bound(value)  #if user checked bounds, the defined bounds are applied here
         self.target_value = value
         value = self.set_position_with_scaling(value)  # apply scaling if the user specified one
-        self.controller.move_stepper_to_position(value)  # when writing your own plugin replace this line
+        self._move_done = self.controller.move_stepper_to_position(value)  # when writing your own plugin replace this line
         self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
 
     def move_rel(self, value: DataActuator):
