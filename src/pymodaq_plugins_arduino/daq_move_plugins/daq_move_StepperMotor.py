@@ -53,7 +53,6 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
         -------
         float: The position obtained after scaling conversion.
         """
-        
         pos = self.controller.get_stepper_position() 
         pos = self.get_position_with_scaling(pos)
         return pos
