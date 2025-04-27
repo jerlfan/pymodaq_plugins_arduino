@@ -136,7 +136,7 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
 
     def move_home(self):
         """Call the reference method of the controller"""
-        self.move_abs(DataActuator(data=0, unit=self.axis_unit))
+        self._move_done = self.controller.move_stepper_to_position(0) 
     
 
     def stop_motion(self):
