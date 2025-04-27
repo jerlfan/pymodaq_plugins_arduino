@@ -33,11 +33,10 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
   
     """
     is_multiaxes = True
-    _axis_names: Union[List[str], Dict[str, int]] = {'Motor0':0, 'Motor1':1}
-    # TODO changing the name using the config file is not implemented yet.
+    _axis_names: Union[List[str], Dict[str, int]] = {'Stepper':0}
     _controller_units: Union[str, List[str]] = '' #steps
     _epsilon: Union[float, List[float]] = 1 
-    data_actuator_type = DataActuatorType.DataActuator  
+    data_actuator_type = DataActuatorType.float    
     
     
     params = [ {'title': 'Ports:', 'name': 'com_port', 'type': 'list',
@@ -55,15 +54,14 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
         float: The position obtained after scaling conversion.
         """
         
-        pos = DataActuator(
-                    data=self.controller.axes[self.axis_value].rpos,
-                    unit=self.axis_unit)  
+        pos = self.controller.get_stepper_position() 
         pos = self.get_position_with_scaling(pos)
         return pos
 
     def user_condition_to_reach_target(self) -> bool:
         """ Will be triggered for each end of move; abs, rel or homing"""
-        return self._move_done
+        #åreturn self._move_done
+        pass
 
     def close(self):
         """Terminate the communication protocol"""
@@ -78,17 +76,7 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
             A given parameter (within detector_settings) whose value has been changed by the user
         """
         ## TODO for your custom plugin
-        if param.name() == 'axis':
-            self.get_actuator_value()  # to update the current position of the axis
-            #self.axis_unit = 'mm'
-            # do this only if you can and if the units are not known beforehand, for instance
-            # if the motors connected to the controller are of different type (mm, µm, nm, , etc...)
-            # see BrushlessDCMotor from the thorlabs plugin for an exemple
-
-        elif param.name() == "a_parameter_you've_added_in_self.params":
-           self.controller.your_method_to_apply_this_param_change()
-        else:
-            pass
+        pass
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
@@ -108,14 +96,17 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
         self.ini_stage_init(slave_controller=controller)  # will be useful when controller is slave
 
         if self.is_master:  # is needed when controller is master
-            self.controller = self.Controller(contype="ethernet", n_axes=2) 
-            self.controller.connect()  # any object that will control the stages
-            self.controller.enable_all()  # enable all axes
-            self.settings['serial_num']=self.controller.serial_number()
-            self.controller.load_buffer(self.settings['buff_num'])  # load the buffer file (it is needed to configure the controller)
-            
+            self.controller = Arduino(
+                com_port=self.settings['com_port']
+                )
+            self.controller.initialize_stepper_motor(
+                config('stepper','pins','pul_pin'),
+                config('stepper','pins','dir_pin'),
+                config('stepper','pins','ena_pin')
+                ) 
+           
           
-        info = "Controller connected and axis enabled"
+        info = "Stepper motor connected with config file "
         initialized = True#self.controller.a_method_or_atttribute_to_check_if_init()  # todo
         return info, initialized
 
@@ -130,7 +121,7 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
         value = self.check_bound(value)  #if user checked bounds, the defined bounds are applied here
         self.target_value = value
         value = self.set_position_with_scaling(value)  # apply scaling if the user specified one
-        self.controller.axes[self.axis_value].ptp(value.value())  # when writing your own plugin replace this line
+        self.controller.move_stepper_to_position(value)  # when writing your own plugin replace this line
         self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
 
     def move_rel(self, value: DataActuator):

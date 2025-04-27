@@ -106,7 +106,7 @@ class Arduino(telemetrix.Telemetrix):
         self.digital_write(self.enable , 1) # Disable the motor driver to avoid electrical consumption
         self.stepper_set_current_position(self.stepper_motor, 0) # Set the current position to 0
 
-    def move_stepper_to_position(self, position, max_speed=200, acceleration=400):
+    def move_stepper_to_position(self, position: float, max_speed=200, acceleration=400):
         """ Move the stepper motor to the specified position """
         if self.stepper_motor is None:
             raise ValueError("Stepper motor not initialized. Call initialize_stepper_motor first.")
@@ -116,7 +116,7 @@ class Arduino(telemetrix.Telemetrix):
         self.stepper_set_acceleration(self.stepper_motor, acceleration)
 
         # Set the target position
-        self.stepper_move_to(self.stepper_motor, position)
+        self.stepper_move_to(self.stepper_motor, int(position))
 
         # Run the motor and wait for completion
         print(f'Starting motor to move to position {position}...')
@@ -142,7 +142,7 @@ class Arduino(telemetrix.Telemetrix):
         self.stepper_get_current_position(self.stepper_motor, 
                                           current_position_callback=position_callback)
         position_event.wait()
-        print(f'move to {self.position}')
+        print(f'actual position {self.position}')
         return self.position
 
 if __name__ == '__main__':
