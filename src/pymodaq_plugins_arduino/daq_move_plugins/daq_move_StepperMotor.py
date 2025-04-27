@@ -116,12 +116,11 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
         ----------
         value: (float) value of the absolute target positioning
         """
-
         value = self.check_bound(value)  #if user checked bounds, the defined bounds are applied here
         self.target_value = value
         value = self.set_position_with_scaling(value)  # apply scaling if the user specified one
-        self._move_done = self.controller.move_stepper_to_position(value)  # when writing your own plugin replace this line
-        self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
+        self._move_done = self.controller.move_stepper_to_position(value)  
+        self.emit_status(ThreadCommand('Update_Status', ['absolute move done']))
 
     def move_rel(self, value: DataActuator):
         """ Move the actuator to the relative target actuator value defined by value
@@ -132,11 +131,9 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
         """
         value = self.check_bound(self.current_position + value) - self.current_position
         self.target_value = value + self.current_position
-        value = self.set_position_relative_with_scaling(value)
-
-        
-        self.controller.axes[self.axis_value].ptpr(value.value())
-        self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
+        value = self.set_position_relative_with_scaling(value)       
+        self._move_done = self.controller.move_stepper_to_position(self.target_value)
+        self.emit_status(ThreadCommand('Update_Status', ['relative move done']))
 
     def move_home(self):
         """Call the reference method of the controller"""
