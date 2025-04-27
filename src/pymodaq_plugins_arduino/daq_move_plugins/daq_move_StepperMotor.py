@@ -98,7 +98,11 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
             self.controller = Arduino(
                 com_port=self.settings['com_port']
                 )
-            self.controller.initialize_stepper_motor(8, 9, 7)  # pulse, direction, enable pins
+            self.controller.initialize_stepper_motor(
+                config('stepper', 'pins', 'pul_pin'),
+                config('stepper', 'pins', 'dir_pin'),
+                config('stepper', 'pins', 'ena_pin'),
+                )  # pulse, direction, enable pins
            
           
         info = "Stepper motor connected with config file "

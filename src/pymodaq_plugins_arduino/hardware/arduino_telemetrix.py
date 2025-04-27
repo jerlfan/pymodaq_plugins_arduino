@@ -125,11 +125,6 @@ class Arduino(telemetrix.Telemetrix):
         self.digital_write(self.enable, 1)
         return True
 
-    def _stepper_callback(self, data):
-        """ Callback function to signal that the stepper motor has completed its movement """
-        self.completion_event.set() # Signal that the motion is complete
-        
-    
     def get_stepper_position(self):
         """ Retrieve the current position of the stepper motor """
         position_event = Event()
@@ -141,7 +136,6 @@ class Arduino(telemetrix.Telemetrix):
         self.stepper_get_current_position(self.stepper_motor, 
                                           current_position_callback=position_callback)
         position_event.wait()
-        print(f'actual position {self.position}')
         return self.position
 
 if __name__ == '__main__':
