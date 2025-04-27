@@ -141,11 +141,7 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
 
     def stop_motion(self):
       """Stop the actuator and emits move_done signal"""
-
-      ## TODO for your custom plugin
-      raise NotImplemented  # when writing your own plugin remove this line
-      self.controller.your_method_to_stop_positioning()  # when writing your own plugin replace this line
-      self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
+        pass
 
 
 if __name__ == '__main__':
