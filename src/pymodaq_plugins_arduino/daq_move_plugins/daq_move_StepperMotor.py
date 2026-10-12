@@ -2,7 +2,6 @@ from typing import Union, List, Dict, Optional
 from pymodaq.control_modules.move_utility_classes import (
     DAQ_Move_base, comon_parameters_fun, main, DataActuatorType, DataActuator
 )
-from pymodaq_utils.utils import ThreadCommand  # Object used to send info back to the main thread
 from pymodaq_gui.parameter import Parameter
 from pymodaq_plugins_arduino.hardware.arduino_telemetrix import Arduino
 from pymodaq_plugins_arduino.utils import Config
@@ -30,11 +29,10 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
         The particular object that allows communication with the hardware, in general, a Python wrapper around the
         hardware library.
     """
-    is_multiaxes = True
-    _axis_names: Union[List[str], Dict[str, int]] = {'Stepper': config('stepper')}
-    _controller_units: Union[str, List[str]] = ''  # steps
-    _epsilon: Union[float, List[float]] = 1
-    data_actuator_type = DataActuatorType.float
+    _axis_names: Union[List[str], Dict[str, int]] = {'Stepper': config('stepper', 'name')}
+    _controller_units: Union[str, Dict[str, str]] = {'Stepper': 'count'}
+    _epsilons: Union[float, Dict[str, float]] = {'Stepper': 1}
+    data_actuator_type = DataActuatorType.DataActuator
 
     params = [
         {
@@ -44,30 +42,22 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
             'value': config('com_port'),
             'limits': Arduino.COM_PORTS,
         }
-    ] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
+    ] + comon_parameters_fun(axis_names=_axis_names)
 
     def ini_attributes(self):
         self.controller: Optional[Arduino] = None
 
-    def get_actuator_value(self) -> float:
-        """Get the current value from the hardware with scaling conversion.
-
-        Returns
-        -------
-        float
-            The position obtained after scaling conversion.
-        """
-        pos = self.controller.get_stepper_position()
+    def get_actuator_value(self) -> DataActuator:
+        """Get the current position of the motor, in steps, with scaling conversion."""
+        pos = DataActuator(data=self.controller.get_stepper_position(),
+                           units=self.axis_unit)
         pos = self.get_position_with_scaling(pos)
         return pos
 
-    def user_condition_to_reach_target(self) -> bool:
-        """Will be triggered for each end of move; abs, rel, or homing."""
-        return self._move_done
-
     def close(self):
-        """Terminate the communication protocol."""
-        self.controller.shutdown()
+        """Terminate the communication with the Arduino."""
+        if self.controller is not None:
+            self.controller.shutdown()
 
     def commit_settings(self, param: Parameter):
         """Apply the consequences of a change of value in the detector settings.
@@ -106,44 +96,28 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
             )  # Pulse, direction, enable pins
 
         info = "Stepper motor connected with config file"
-        initialized = True  # TODO: Replace with actual initialization check
+        initialized = self.controller.stepper_motor is not None
         return info, initialized
 
     def move_abs(self, value: DataActuator):
-        """Move the actuator to the absolute target defined by value.
-
-        Parameters
-        ----------
-        value: float
-            Value of the absolute target positioning.
-        """
-        value = self.check_bound(value)  # Apply bounds if user checked them
+        """Move the motor to the absolute target defined by value."""
+        value = self.check_bound(value)
         self.target_value = value
-        value = self.set_position_with_scaling(value)  # Apply scaling if specified
-        self._move_done = self.controller.move_stepper_to_position(value)
-        self.emit_status(ThreadCommand('Update_Status', ['absolute move done']))
+        value = self.set_position_with_scaling(value)
+        self.controller.move_stepper_to_position(value.units_as(self.axis_unit).value())
 
     def move_rel(self, value: DataActuator):
-        """Move the actuator to the relative target actuator value defined by value.
-
-        Parameters
-        ----------
-        value: float
-            Value of the relative target positioning.
-        """
-        value = self.check_bound(self.current_position + value) - self.current_position
-        self.target_value = value + self.current_position
-        value = self.set_position_relative_with_scaling(value)
-        self._move_done = self.controller.move_stepper_to_position(self.target_value)
-        self.emit_status(ThreadCommand('Update_Status', ['relative move done']))
+        """Move the motor by the relative amount defined by value."""
+        self.move_abs(self.current_value + value)
 
     def move_home(self):
-        """Call the reference method of the controller."""
-        self.controller.move_stepper_to_position(0)  # Move to home position (0)
-        self.emit_status(ThreadCommand('Update_Status', ['homing']))
+        """Move the motor back to its reference position (step 0)."""
+        home = DataActuator(data=0, units=self.axis_unit)
+        self.target_value = self.get_position_with_scaling(home)
+        self.controller.move_stepper_to_position(0)
 
     def stop_motion(self):
-        """Stop the actuator and emit move_done signal."""
+        """Stopping is not supported: moves are blocking until completion."""
         pass
 
 
