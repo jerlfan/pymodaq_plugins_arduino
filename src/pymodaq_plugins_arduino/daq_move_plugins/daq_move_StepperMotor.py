@@ -19,7 +19,7 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
     It may work with up to 4 axes depending on the configuration.
     It does not consider the daisy chain option: only one controller.
     Tested with Arduino Uno and one motor NEMA17 (1 axis).
-    PyMoDAQ version during the test was PyMoDAQ==5.0.5.
+    PyMoDAQ version during the test was PyMoDAQ==5.3.2.
     The operating system used was Windows 11.
     Telemetrix4arduino has to be uploaded on the Arduino board.
 
@@ -83,17 +83,15 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
         initialized: bool
             False if initialization failed otherwise True.
         """
-        self.ini_stage_init(slave_controller=controller)  # Useful when controller is slave
-
-        if self.is_master:  # Needed when controller is master
-            self.controller = Arduino(
-                com_port=self.settings['com_port']
-            )
+        if self.is_master:
+            self.controller = Arduino(com_port=self.settings['com_port'])
             self.controller.initialize_stepper_motor(
                 config('stepper', 'pins', 'pul_pin'),
                 config('stepper', 'pins', 'dir_pin'),
                 config('stepper', 'pins', 'ena_pin'),
             )  # Pulse, direction, enable pins
+        else:
+            self.controller = controller
 
         info = "Stepper motor connected with config file"
         initialized = self.controller.stepper_motor is not None
@@ -104,7 +102,7 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
         value = self.check_bound(value)
         self.target_value = value
         value = self.set_position_with_scaling(value)
-        self.controller.move_stepper_to_position(value.units_as(self.axis_unit).value())
+        self.controller.move_stepper_to_position(value.value(self.axis_unit))
 
     def move_rel(self, value: DataActuator):
         """Move the motor by the relative amount defined by value."""
