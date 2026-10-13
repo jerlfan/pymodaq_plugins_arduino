@@ -16,12 +16,14 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
     DAQ_Move_base. It makes a bridge between the DAQ_Move module and the Python wrapper of a particular instrument.
 
     Use the arduino_telemetrix wrapper to communicate with the Arduino Board.
-    It may work with up to 4 axes depending on the configuration.
+    Telemetrix supports up to 4 stepper motors, but this plugin currently drives a single axis.
     It does not consider the daisy chain option: only one controller.
+    Moves are non-blocking and can be stopped with the Stop button.
+    There is no encoder: the position is the step counter of the Arduino, reset to 0 at initialization.
     Tested with Arduino Uno and one motor NEMA17 (1 axis).
     PyMoDAQ version during the test was PyMoDAQ==5.3.2.
     The operating system used was Windows 11.
-    Telemetrix4arduino has to be uploaded on the Arduino board.
+    Telemetrix4Arduino has to be uploaded on the Arduino board.
 
     Attributes
     ----------
@@ -115,8 +117,9 @@ class DAQ_Move_StepperMotor(DAQ_Move_base):
         self.controller.move_stepper_to_position(0)
 
     def stop_motion(self):
-        """Stopping is not supported: moves are blocking until completion."""
-        pass
+        """Stop the motor immediately, then emit the move_done signal"""
+        self.controller.stop_stepper()
+        self.move_done()
 
 
 if __name__ == '__main__':
